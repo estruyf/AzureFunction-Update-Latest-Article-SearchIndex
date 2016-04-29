@@ -2,38 +2,42 @@ var config = (function () {
     var settings;
     
     var check = function () {
+        var errors = [];
         if (!process.env.searchName) {
-            throw('Please set the searchName setting');
+            errors.push('searchName');
         }
         
         if (!process.env.searchKey) {
-            throw('Please set the searchKey setting');
+            errors.push('searchKey');
         }
         
         if (!process.env.searchIndex) {
-            throw('Please set the searchIndex setting');
+            errors.push('searchIndex');
         }
         
         if (!process.env.wpSrvUrl) {
-            throw('Please set the wpSrvUrl setting');
+            errors.push('wpSrvUrl');
         }
         
         if (!process.env.wpSrcEndpoint) {
-            throw('Please set the wpSrcEndpoint setting');
+            errors.push('wpSrcEndpoint');
         }
         
         if (!process.env.sendgridKey) {
-            throw('Please set the sendgridKey setting');
+            errors.push('sendgridKey');
         }
         
         if (!process.env.mailTo) {
-            throw('Please set the mailTo setting');
+            errors.push('mailTo');
         }
         
         if (!process.env.mailFrom) {
-            throw('Please set the mailFrom setting');
+            errors.push('mailFrom');
         }
         
+        if (errors.length) {
+            throw('Please set the following settings: ' + errors.join(' '));
+        }
         return true;
     },
     get = function () {
