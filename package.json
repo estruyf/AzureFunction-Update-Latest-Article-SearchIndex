@@ -1,0 +1,17 @@
+{
+  "name": "azurefunction-update-latest-article-searchindex",
+  "version": "1.0.0",
+  "description": "This Azure function updates the Azure Search index with the latest published Wordpress article.",
+  "main": "index.js",
+  "dependencies": {
+    "request": "^2.72.0",
+    "sendgrid": "^2.0.0",
+    "striptags": "^2.1.1"
+  },
+  "author": "Elio Struyf",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "private": true
+}

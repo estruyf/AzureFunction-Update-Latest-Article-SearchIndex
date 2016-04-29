@@ -1,0 +1,11 @@
+{
+  "bindings": [
+    {
+      "name": "req",
+      "type": "httpTrigger",
+      "webHookType": "",
+      "direction": "in"
+    }
+  ],
+  "disabled": false
+}
