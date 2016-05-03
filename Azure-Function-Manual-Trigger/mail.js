@@ -1,18 +1,13 @@
-var configuration = require('./config'),
-    config = configuration.get();
-    sendgrid = require("sendgrid")(config.sendgridKey);
-    
 var mail = (function () {
-    var payload   = {
-        to: config.mailTo,
-        from: config.mailFrom,
-        subject: '',
-        text: ''
-    };
-
     var send = function (subject, body) {
-        payload.subject = subject;
-        payload.html = body;
+        var sendgrid = require("sendgrid")(global.settings.sendgridKey);
+        
+        var payload   = {
+            to: global.settings.mailTo,
+            from: global.settings.mailFrom,
+            subject: subject,
+            text: body
+        };
         
         var email = new sendgrid.Email();
         sendgrid.send(payload, function(error, json) {

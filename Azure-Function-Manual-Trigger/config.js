@@ -1,6 +1,4 @@
 var config = (function () {
-    var settings;
-    
     var check = function () {
         var errors = [];
         if (!process.env.searchName) {
@@ -36,31 +34,36 @@ var config = (function () {
         }
         
         if (errors.length) {
-            throw('Please set the following settings: ' + errors.join(' '));
+            return ('Please set the following settings:' + errors.join(' '));
         }
-        return true;
+        return null;
     },
-    get = function () {
-        if (check()) {
-            settings = {
-                searchName: process.env.searchName,
-                searchKey: process.env.searchKey,
-                searchIndex: process.env.searchIndex,
-                wpSrvUrl: process.env.wpSrvUrl,
-                wpSrcEndpoint: process.env.wpSrcEndpoint,
-                sendgridKey: process.env.sendgridKey,
-                mailTo: process.env.mailTo,
-                mailFrom: process.env.mailFrom
-            };
-            return settings;
+    init = function () {
+        if (global.settings === null) {
+            var settingsCheck = check();
+            if (settingsCheck === null) {
+                global.settings = {
+                    searchName: process.env.searchName,
+                    searchKey: process.env.searchKey,
+                    searchIndex: process.env.searchIndex,
+                    wpSrvUrl: process.env.wpSrvUrl,
+                    wpSrcEndpoint: process.env.wpSrcEndpoint,
+                    sendgridKey: process.env.sendgridKey,
+                    mailTo: process.env.mailTo,
+                    mailFrom: process.env.mailFrom
+                };
+            } else {
+                return settingsCheck;
+            }
         }
+        return null;
     },
     getSearchSrvUrl = function () {
-        return 'https://' + settings.searchName + '.search.windows.net/indexes/' + settings.searchIndex + '/docs/index?api-version=2015-02-28';
+        return 'https://' + global.settings.searchName + '.search.windows.net/indexes/' + global.settings.searchIndex + '/docs/index?api-version=2015-02-28';
     };
     
     return {
-        get: get,
+        init: init,
         getSearchSrvUrl: getSearchSrvUrl
     }
 })();

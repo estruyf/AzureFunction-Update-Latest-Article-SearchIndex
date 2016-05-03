@@ -1,21 +1,47 @@
+global.settings = null;
+
 var configuration = require('./config'),
-    config = configuration.get();
     request = require('request'),
     mail = require('./mail'),
+    logging = require('./logging'),
     striptags = require('striptags');
     
 module.exports = function (context, req) {
+    var errorMsg = '';
+    
+    // Check if the settings are correct
+    var settingsError = configuration.init();
+    if (settingsError !== null) {
+        logging.error(context, settingsError);
+        return;
+    }
+    
+    // Check if a post ID has been retrieved
+    var postId = null;
+    if (req.query.postId || (req.body && req.body.postId)) {
+        postId = (req.query.postId || req.body.postId);
+        if (postId === null) {
+            logging.error(context, "Something went wrong with retrieving the post ID.");
+            return;
+        }
+    } else {
+        logging.error(context, "Please pass the post ID to update.");
+        return;
+    }
+    
     // Retrieve the latest blog article
-    request(config.wpSrvUrl + config.wpSrcEndpoint, (error, response, data) => {
+    var articleUrl = global.settings.wpSrvUrl + global.settings.wpSrcEndpoint.replace('{postId}', postId);
+    context.log(articleUrl);
+    request(articleUrl, (error, response, data) => {
         if (!error && response.statusCode == 200) {
             if (data !== null) {
-                context.log('Blog article retrieved');
-                var result = JSON.parse(data);
-                if (typeof result.posts === 'undefined') {
-                    throw('There was something wrong with retrieving the latest blog article.');
+                context.log('Blog article (' + postId + ') retrieved');
+                var article = JSON.parse(data);
+                if (typeof article.ID === 'undefined') {
+                    logging.error(context, "There was something wrong with retrieving the latest blog article.");
+                    return;
                 }
-                // Get the article object
-                var article = result.posts[0];
+                
                 // Strip the article content from HTML tags
                 var strippedContent = striptags(article.content).replace(/\n/g, ' ');
                 // Create a tags collection
@@ -50,7 +76,7 @@ module.exports = function (context, req) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'api-key': config.searchKey
+                        'api-key': global.settings.searchKey
                     },
                     body: JSON.stringify(articleBody)
                 };
@@ -73,22 +99,25 @@ module.exports = function (context, req) {
                                 }
                             }
                         } else {
-                            context.log('Article failed to add to the index!');
-                            mail.send('Azure search error!', 'Article failed to add to the index!');
-                            context.done();
+                            errorMsg = 'Article failed to add to the index!';
+                            context.log(errorMsg);
+                            mail.send('Azure search error!', errorMsg);
+                            logging.error(context, errorMsg);
                         }
                     } else {
-                        context.log('Article failed to add to the index!');
-                        mail.send('Azure search error!', 'Article failed to add to the index!');
-                        context.done();
+                        errorMsg = 'Article failed to add to the index!';
+                        context.log(errorMsg);
+                        mail.send('Azure search error!', errorMsg);
+                        logging.error(context, errorMsg);
                     }
                 });
             }
         } else {
             // Log the error
-            context.log('Failed to retrieve article!');
-            mail.send('Azure search error!', 'Failed to retrieve article from Wordpress!');
-            context.done();
+            errorMsg = 'Failed to retrieve article from Wordpress!';
+            context.log(errorMsg);
+            mail.send('Azure search error!', errorMsg);
+            logging.error(context, errorMsg);
         }
     });
 };
