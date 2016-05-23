@@ -32,7 +32,7 @@ class Azure_Article_Updater_Plugin {
      */
 	public function aau_call_azure_function ($new_status, $old_status, $post) {
 		// Check if the page got published or updated
-		if ($new_status == 'publish') {
+		if ($new_status == 'publish' && $post->post_type == 'post') {
 			// Do a call to the Azure Function URL
 			$aau_url = esc_attr(get_option('aau_setting_azure_function_url'));
 			if(!empty($aau_url)) {
